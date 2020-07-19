@@ -6,12 +6,12 @@ include_directories(
 
 set(
 	TLS_SRC
-	tls.c
-	tls_client.c
-	tls_config.c
-	tls_server.c
-	tls_util.c
-	tls_verify.c
+	tls/tls.c
+	tls/tls_client.c
+	tls/tls_config.c
+	tls/tls_server.c
+	tls/tls_util.c
+	tls/tls_verify.c
 )
 
 
