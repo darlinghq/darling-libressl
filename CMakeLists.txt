@@ -35,8 +35,28 @@ include_directories(BEFORE
 )
 
 #
+# libcompat
+#
+add_darling_static_library(libressl_2_2_9_libcompat FAT SOURCES
+	# reallocarray sources
+	#
+	# we technically have reallocarray, but it's a private libmalloc function
+	crypto/compat/reallocarray.c
+
+	# explicit_bzero sources
+	crypto/compat/explicit_bzero.c
+
+	# timingsafe_memcmp sources
+	crypto/compat/timingsafe_memcmp.c
+)
+
+#
 # crypto
 #
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libcrypto.35.dylib")
+set(DYLIB_CURRENT_VERSION "36.0.0")
+set(DYLIB_COMPAT_VERSION "36.0.0")
 
 add_darling_library(crypto35
 	# assembly replacements
@@ -587,17 +607,6 @@ add_darling_library(crypto35
 	crypto/bio/b_posix.c
 	crypto/bio/bss_log.c
 	crypto/ui/ui_openssl.c
-
-	# reallocarray sources
-	#
-	# we technically have reallocarray, but it's a private libmalloc function
-	crypto/compat/reallocarray.c
-
-	# explicit_bzero sources
-	crypto/compat/explicit_bzero.c
-
-	# timingsafe_memcmp sources
-	crypto/compat/timingsafe_memcmp.c
 )
 
 set_source_files_properties(crypto/compat/explicit_bzero.c PROPERTIES
@@ -613,6 +622,7 @@ target_include_directories(crypto35 PRIVATE
 )
 
 target_link_libraries(crypto35 PRIVATE
+	libressl_2_2_9_libcompat
 	system
 )
 
@@ -625,6 +635,10 @@ install(TARGETS crypto35 DESTINATION libexec/darling/usr/lib)
 #
 # ssl
 #
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libssl.35.dylib")
+set(DYLIB_CURRENT_VERSION "36.0.0")
+set(DYLIB_COMPAT_VERSION "36.0.0")
 
 add_darling_library(ssl35
 	ssl/bio_ssl.c
@@ -677,6 +691,7 @@ target_include_directories(ssl35 PRIVATE
 )
 
 target_link_libraries(ssl35 PRIVATE
+	libressl_2_2_9_libcompat
 	crypto35
 	system
 )
@@ -688,6 +703,10 @@ set_target_properties(ssl35 PROPERTIES
 #
 # tls
 #
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libtls.6.dylib")
+set(DYLIB_CURRENT_VERSION "7.0.0")
+set(DYLIB_COMPAT_VERSION "7.0.0")
 
 add_darling_library(tls6
 	tls/tls_client.c
@@ -703,6 +722,7 @@ target_include_directories(tls6 PRIVATE
 )
 
 target_link_libraries(tls6 PRIVATE
+	libressl_2_2_9_libcompat
 	ssl35
 	crypto35
 	system
