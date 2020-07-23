@@ -1,5 +1,14 @@
 project(darling-libressl)
 
+# copied from Darling-libressl-2.8.3's `CMakeLists.txt`
+function(generate_exp in out)
+	file(READ ${in} SYMBOLS)
+	string(REGEX REPLACE "\n$" "" SYMBOLS ${SYMBOLS})
+	string(REPLACE "\n" "\n_" SYMBOLS ${SYMBOLS})
+	string(REGEX REPLACE "(.)$" "\\1\\n" SYMBOLS ${SYMBOLS})
+	file(WRITE ${out} "_${SYMBOLS}")
+endfunction()
+
 #
 # common settings
 #
@@ -44,8 +53,33 @@ include_directories(BEFORE
 )
 
 #
+# libcompat
+#
+add_darling_static_library(libressl_2_5_5_libcompat FAT SOURCES
+	# reallocarray sources
+	#
+	# we technically have reallocarray, but it's a private libmalloc function
+	crypto/compat/reallocarray.c
+
+	# recallocarray sources
+	crypto/compat/recallocarray.c
+
+	# explicit_bzero sources
+	crypto/compat/explicit_bzero.c
+
+	# timingsafe_memcmp sources
+	crypto/compat/timingsafe_memcmp.c
+)
+
+#
 # crypto
 #
+
+generate_exp(${CMAKE_CURRENT_SOURCE_DIR}/crypto/crypto.sym ${CMAKE_CURRENT_BINARY_DIR}/crypto.exp)
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libcrypto.41.dylib")
+set(DYLIB_CURRENT_VERSION "42.1.0")
+set(DYLIB_COMPAT_VERSION "42.0.0")
 
 add_darling_library(crypto41
 	# assembly replacements
@@ -597,20 +631,6 @@ add_darling_library(crypto41
 	crypto/bio/b_posix.c
 	crypto/bio/bss_log.c
 	crypto/ui/ui_openssl.c
-
-	# reallocarray sources
-	#
-	# we technically have reallocarray, but it's a private libmalloc function
-	crypto/compat/reallocarray.c
-
-	# recallocarray sources
-	crypto/compat/recallocarray.c
-
-	# explicit_bzero sources
-	crypto/compat/explicit_bzero.c
-
-	# timingsafe_memcmp sources
-	crypto/compat/timingsafe_memcmp.c
 )
 
 set_source_files_properties(crypto/compat/explicit_bzero.c PROPERTIES
@@ -632,6 +652,7 @@ target_include_directories(crypto41 PRIVATE
 )
 
 target_link_libraries(crypto41 PRIVATE
+	libressl_2_5_5_libcompat
 	system
 )
 
@@ -639,11 +660,21 @@ set_target_properties(crypto41 PROPERTIES
 	OUTPUT_NAME "crypto.41"
 )
 
+target_link_options(crypto41 PRIVATE
+	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/crypto.exp
+)
+
 install(TARGETS crypto41 DESTINATION libexec/darling/usr/lib)
 
 #
 # ssl
 #
+
+generate_exp(${CMAKE_CURRENT_SOURCE_DIR}/ssl/ssl.sym ${CMAKE_CURRENT_BINARY_DIR}/ssl.exp)
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libssl.43.dylib")
+set(DYLIB_CURRENT_VERSION "44.2.0")
+set(DYLIB_COMPAT_VERSION "44.0.0")
 
 add_darling_library(ssl43
 	ssl/bio_ssl.c
@@ -691,6 +722,7 @@ target_include_directories(ssl43 PRIVATE
 )
 
 target_link_libraries(ssl43 PRIVATE
+	libressl_2_5_5_libcompat
 	crypto41
 	system
 )
@@ -699,9 +731,19 @@ set_target_properties(ssl43 PROPERTIES
 	OUTPUT_NAME "ssl.43"
 )
 
+target_link_options(ssl43 PRIVATE
+	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/ssl.exp
+)
+
 #
 # tls
 #
+
+generate_exp(${CMAKE_CURRENT_SOURCE_DIR}/tls/tls.sym ${CMAKE_CURRENT_BINARY_DIR}/tls.exp)
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libtls.15.dylib")
+set(DYLIB_CURRENT_VERSION "16.4.0")
+set(DYLIB_COMPAT_VERSION "16.0.0")
 
 add_darling_library(tls15
 	tls/tls_bio_cb.c
@@ -725,6 +767,7 @@ target_include_directories(tls15 PRIVATE
 )
 
 target_link_libraries(tls15 PRIVATE
+	libressl_2_5_5_libcompat
 	ssl43
 	crypto41
 	system
@@ -732,4 +775,8 @@ target_link_libraries(tls15 PRIVATE
 
 set_target_properties(tls15 PROPERTIES
 	OUTPUT_NAME "tls.15"
+)
+
+target_link_options(tls15 PRIVATE
+	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/tls.exp
 )
