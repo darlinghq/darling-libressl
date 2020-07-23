@@ -1,5 +1,14 @@
 project(darling-libressl)
 
+# copied and modified from cmake_export_symbol.cmake
+function(generate_exp in out)
+	file(READ ${in} SYMBOLS)
+	string(REGEX REPLACE "\n$" "" SYMBOLS ${SYMBOLS})
+	string(REPLACE "\n" "\n_" SYMBOLS ${SYMBOLS})
+	string(REGEX REPLACE "(.)$" "\\1\\n" SYMBOLS ${SYMBOLS})
+	file(WRITE ${out} "_${SYMBOLS}")
+endfunction()
+
 #
 # common settings
 #
@@ -43,8 +52,36 @@ include_directories(BEFORE
 )
 
 #
+# libcompat
+#
+add_darling_static_library(libressl_2_8_3_libcompat FAT SOURCES
+	# freezero sources
+	crypto/compat/freezero.c
+
+	# reallocarray sources
+	#
+	# we technically have reallocarray, but it's a private libmalloc function
+	crypto/compat/reallocarray.c
+
+	# recallocarray sources
+	crypto/compat/recallocarray.c
+
+	# explicit_bzero sources
+	crypto/compat/explicit_bzero.c
+
+	# timingsafe_memcmp sources
+	crypto/compat/timingsafe_memcmp.c
+)
+
+#
 # crypto
 #
+
+generate_exp(${CMAKE_CURRENT_SOURCE_DIR}/crypto/crypto.sym ${CMAKE_CURRENT_BINARY_DIR}/crypto.exp)
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libcrypto.44.dylib")
+set(DYLIB_CURRENT_VERSION "45.1.0")
+set(DYLIB_COMPAT_VERSION "45.0.0")
 
 # as mentioned before, SMALL_TIME_T needs to be defined on 32-bit and SIZEOF_TIME_T needs to be 4
 # to avoid recompiling a bunch of files unnecessarily, only include files here that actually use these definitions
@@ -624,23 +661,6 @@ add_darling_library(crypto44
 	crypto/bio/bss_log.c
 	crypto/ui/ui_openssl.c
 
-	# freezero sources
-	crypto/compat/freezero.c
-
-	# reallocarray sources
-	#
-	# we technically have reallocarray, but it's a private libmalloc function
-	crypto/compat/reallocarray.c
-
-	# recallocarray sources
-	crypto/compat/recallocarray.c
-
-	# explicit_bzero sources
-	crypto/compat/explicit_bzero.c
-
-	# timingsafe_memcmp sources
-	crypto/compat/timingsafe_memcmp.c
-
 	# bit-specific variants
 	$<TARGET_OBJECTS:crypto44_32>
 	$<TARGET_OBJECTS:crypto44_64>
@@ -665,6 +685,7 @@ target_include_directories(crypto44 PRIVATE
 )
 
 target_link_libraries(crypto44 PRIVATE
+	libressl_2_8_3_libcompat
 	system
 )
 
@@ -672,11 +693,21 @@ set_target_properties(crypto44 PROPERTIES
 	OUTPUT_NAME "crypto.44"
 )
 
+target_link_options(crypto44 PRIVATE
+	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/crypto.exp
+)
+
 install(TARGETS crypto44 DESTINATION libexec/darling/usr/lib)
 
 #
 # ssl
 #
+
+generate_exp(${CMAKE_CURRENT_SOURCE_DIR}/ssl/ssl.sym ${CMAKE_CURRENT_BINARY_DIR}/ssl.exp)
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libssl.46.dylib")
+set(DYLIB_CURRENT_VERSION "47.1.0")
+set(DYLIB_COMPAT_VERSION "47.0.0")
 
 add_darling_library(ssl46
 	ssl/bio_ssl.c
@@ -725,6 +756,7 @@ target_include_directories(ssl46 PRIVATE
 )
 
 target_link_libraries(ssl46 PRIVATE
+	libressl_2_8_3_libcompat
 	crypto44
 	system
 )
@@ -733,9 +765,19 @@ set_target_properties(ssl46 PROPERTIES
 	OUTPUT_NAME "ssl.46"
 )
 
+target_link_options(ssl46 PRIVATE
+	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/ssl.exp
+)
+
 #
 # tls
 #
+
+generate_exp(${CMAKE_CURRENT_SOURCE_DIR}/tls/tls.sym ${CMAKE_CURRENT_BINARY_DIR}/tls.exp)
+
+set(DYLIB_INSTALL_NAME "/usr/lib/libtls.18.dylib")
+set(DYLIB_CURRENT_VERSION "19.1.0")
+set(DYLIB_COMPAT_VERSION "19.0.0")
 
 add_darling_library(tls18
 	tls/tls_bio_cb.c
@@ -760,6 +802,7 @@ target_include_directories(tls18 PRIVATE
 )
 
 target_link_libraries(tls18 PRIVATE
+	libressl_2_8_3_libcompat
 	ssl46
 	crypto44
 	system
@@ -767,4 +810,8 @@ target_link_libraries(tls18 PRIVATE
 
 set_target_properties(tls18 PROPERTIES
 	OUTPUT_NAME "tls.18"
+)
+
+target_link_options(tls18 PRIVATE
+	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/tls.exp
 )
