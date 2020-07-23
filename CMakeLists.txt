@@ -793,11 +793,11 @@ target_compile_definitions(tls16 PRIVATE
 )
 
 target_include_directories(tls16 PRIVATE
-	libressl_2_6_5_libcompat
 	tls
 )
 
 target_link_libraries(tls16 PRIVATE
+	libressl_2_6_5_libcompat
 	ssl44
 	crypto42
 	system
