@@ -85,7 +85,7 @@ set(DYLIB_COMPAT_VERSION "45.0.0")
 
 # as mentioned before, SMALL_TIME_T needs to be defined on 32-bit and SIZEOF_TIME_T needs to be 4
 # to avoid recompiling a bunch of files unnecessarily, only include files here that actually use these definitions
-add_darling_object_library(crypto44_32 i386_ONLY
+add_darling_object_library(crypto44_32 32BIT_ONLY
 	crypto/asn1/a_time_tm.c
 )
 
@@ -98,7 +98,7 @@ target_include_directories(crypto44_32 PRIVATE
 	crypto
 )
 
-add_darling_object_library(crypto44_64 x86_64_ONLY
+add_darling_object_library(crypto44_64 64BIT_ONLY
 	crypto/asn1/a_time_tm.c
 )
 
