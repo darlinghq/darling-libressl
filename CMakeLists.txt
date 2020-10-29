@@ -630,8 +630,6 @@ set_target_properties(crypto35 PROPERTIES
 	OUTPUT_NAME "crypto.35"
 )
 
-install(TARGETS crypto35 DESTINATION libexec/darling/usr/lib)
-
 #
 # ssl
 #
@@ -731,3 +729,6 @@ target_link_libraries(tls6 PRIVATE
 set_target_properties(tls6 PROPERTIES
 	OUTPUT_NAME "tls.6"
 )
+
+# install everything
+install(TARGETS crypto35 ssl35 tls6 DESTINATION libexec/darling/usr/lib)
