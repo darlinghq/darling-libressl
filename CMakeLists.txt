@@ -664,8 +664,6 @@ target_link_options(crypto41 PRIVATE
 	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/crypto.exp
 )
 
-install(TARGETS crypto41 DESTINATION libexec/darling/usr/lib)
-
 #
 # ssl
 #
@@ -780,3 +778,6 @@ set_target_properties(tls15 PROPERTIES
 target_link_options(tls15 PRIVATE
 	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/tls.exp
 )
+
+# install everything
+install(TARGETS crypto41 ssl43 tls15 DESTINATION libexec/darling/usr/lib)
