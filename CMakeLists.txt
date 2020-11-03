@@ -814,5 +814,87 @@ target_link_options(tls18 PRIVATE
 	-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/tls.exp
 )
 
+#
+# `openssl` command
+#
+
+add_darling_executable(openssl
+	apps/openssl/apps.c
+	apps/openssl/asn1pars.c
+	apps/openssl/ca.c
+	apps/openssl/ciphers.c
+	apps/openssl/crl.c
+	apps/openssl/crl2p7.c
+	apps/openssl/dgst.c
+	apps/openssl/dh.c
+	apps/openssl/dhparam.c
+	apps/openssl/dsa.c
+	apps/openssl/dsaparam.c
+	apps/openssl/ec.c
+	apps/openssl/ecparam.c
+	apps/openssl/enc.c
+	apps/openssl/errstr.c
+	apps/openssl/gendh.c
+	apps/openssl/gendsa.c
+	apps/openssl/genpkey.c
+	apps/openssl/genrsa.c
+	apps/openssl/nseq.c
+	apps/openssl/ocsp.c
+	apps/openssl/openssl.c
+	apps/openssl/passwd.c
+	apps/openssl/pkcs12.c
+	apps/openssl/pkcs7.c
+	apps/openssl/pkcs8.c
+	apps/openssl/pkey.c
+	apps/openssl/pkeyparam.c
+	apps/openssl/pkeyutl.c
+	apps/openssl/prime.c
+	apps/openssl/rand.c
+	apps/openssl/req.c
+	apps/openssl/rsa.c
+	apps/openssl/rsautl.c
+	apps/openssl/s_cb.c
+	apps/openssl/s_client.c
+	apps/openssl/s_server.c
+	apps/openssl/s_socket.c
+	apps/openssl/s_time.c
+	apps/openssl/sess_id.c
+	apps/openssl/smime.c
+	apps/openssl/speed.c
+	apps/openssl/spkac.c
+	apps/openssl/ts.c
+	apps/openssl/verify.c
+	apps/openssl/version.c
+	apps/openssl/x509.c
+
+	apps/openssl/apps_posix.c
+	apps/openssl/certhash.c
+
+	apps/openssl/compat/strtonum.c
+)
+
+target_include_directories(openssl PRIVATE
+	apps/openssl
+)
+
+target_link_libraries(openssl
+	libressl_2_8_3_libcompat
+	crypto44
+	ssl46
+)
+
 # install everything
 install(TARGETS crypto44 ssl46 tls18 DESTINATION libexec/darling/usr/lib)
+install(TARGETS openssl DESTINATION libexec/darling/usr/bin)
+
+install(FILES apps/openssl/openssl.1 DESTINATION libexec/darling/usr/share/man/man1)
+
+# empty dir
+install(DIRECTORY DESTINATION libexec/darling/etc/ssl/certs)
+install(
+	FILES
+		apps/openssl/cert.pem
+		apps/openssl/openssl.cnf
+		apps/openssl/x509v3.cnf
+	DESTINATION libexec/darling/etc/ssl
+)
