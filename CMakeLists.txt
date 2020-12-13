@@ -86,32 +86,36 @@ set(DYLIB_COMPAT_VERSION "43.0.0")
 
 # as mentioned before, SMALL_TIME_T needs to be defined on 32-bit and SIZEOF_TIME_T needs to be 4
 # to avoid recompiling a bunch of files unnecessarily, only include files here that actually use these definitions
-add_darling_object_library(crypto42_32 32BIT_ONLY
-	crypto/asn1/a_time_tm.c
-)
+if (BUILD_TARGET_32BIT)
+	add_darling_object_library(crypto42_32 32BIT_ONLY
+		crypto/asn1/a_time_tm.c
+	)
 
-target_compile_definitions(crypto42_32 PRIVATE
-	SIZEOF_TIME_T=4
-	SMALL_TIME_T
-)
+	target_compile_definitions(crypto42_32 PRIVATE
+		SIZEOF_TIME_T=4
+		SMALL_TIME_T
+	)
 
-target_include_directories(crypto42_32 PRIVATE
-	crypto
-)
+	target_include_directories(crypto42_32 PRIVATE
+		crypto
+	)
+endif ()
 
-add_darling_object_library(crypto42_64 64BIT_ONLY
-	crypto/asn1/a_time_tm.c
-)
+if (BUILD_TARGET_64BIT)
+	add_darling_object_library(crypto42_64 64BIT_ONLY
+		crypto/asn1/a_time_tm.c
+	)
 
-target_compile_definitions(crypto42_64 PRIVATE
-	SIZEOF_TIME_T=8
-)
+	target_compile_definitions(crypto42_64 PRIVATE
+		SIZEOF_TIME_T=8
+	)
 
-target_include_directories(crypto42_64 PRIVATE
-	crypto
-)
+	target_include_directories(crypto42_64 PRIVATE
+		crypto
+	)
+endif ()
 
-add_darling_library(crypto42
+set(crypto42_source
 	# assembly replacements
 	crypto/aes/aes_cbc.c
 	crypto/aes/aes_core.c
@@ -657,10 +661,23 @@ add_darling_library(crypto42
 	crypto/bio/b_posix.c
 	crypto/bio/bss_log.c
 	crypto/ui/ui_openssl.c
+)
 
-	# bit-specific variants
-	$<TARGET_OBJECTS:crypto42_32>
-	$<TARGET_OBJECTS:crypto42_64>
+# bit-specific variants
+if (BUILD_TARGET_32BIT)
+	set (crypto42_source ${crypto42_source}
+		$<TARGET_OBJECTS:crypto42_32>
+	)
+endif ()
+
+if (BUILD_TARGET_64BIT)
+	set (crypto42_source ${crypto42_source}
+		$<TARGET_OBJECTS:crypto42_64>
+	)
+endif ()
+
+add_darling_library(crypto42
+	${crypto42_source}
 )
 
 set_source_files_properties(crypto/compat/explicit_bzero.c PROPERTIES
