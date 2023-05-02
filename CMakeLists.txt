@@ -907,11 +907,11 @@ install(TARGETS openssl DESTINATION libexec/darling/usr/bin)
 install(FILES apps/openssl/openssl.1 DESTINATION libexec/darling/usr/share/man/man1)
 
 # empty dir
-install(DIRECTORY DESTINATION libexec/darling/etc/ssl/certs)
+install(DIRECTORY DESTINATION libexec/darling/private/etc/ssl/certs)
 install(
 	FILES
 		apps/openssl/cert.pem
 		apps/openssl/openssl.cnf
 		apps/openssl/x509v3.cnf
-	DESTINATION libexec/darling/etc/ssl
+	DESTINATION libexec/darling/private/etc/ssl
 )
