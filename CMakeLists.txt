@@ -692,6 +692,10 @@ target_compile_definitions(crypto44 PRIVATE
 	OPENSSLDIR="/etc/ssl"
 )
 
+target_compile_options(crypto44 PRIVATE
+	-fno-strict-aliasing
+)
+
 target_include_directories(crypto44 PRIVATE
 	crypto
 	crypto/asn1
@@ -898,6 +902,14 @@ target_link_libraries(openssl
 	libressl_2_8_3_libcompat
 	crypto44
 	ssl46
+)
+
+add_darling_executable(darling_ec_tls_regress
+	tests/darling_ec_tls_regress.c
+)
+
+target_link_libraries(darling_ec_tls_regress
+	crypto44
 )
 
 # install everything
