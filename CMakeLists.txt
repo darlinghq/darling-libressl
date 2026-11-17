@@ -913,17 +913,8 @@ target_link_libraries(darling_ec_tls_regress
 )
 
 # install everything
+#
+# The openssl command, its manual page and the default configuration and
+# certificate bundle come from the newest LibreSSL (as on macOS); this version
+# provides only its libraries.
 install(TARGETS crypto44 ssl46 tls18 DESTINATION libexec/darling/usr/lib)
-install(TARGETS openssl DESTINATION libexec/darling/usr/bin)
-
-install(FILES apps/openssl/openssl.1 DESTINATION libexec/darling/usr/share/man/man1)
-
-# empty dir
-install(DIRECTORY DESTINATION libexec/darling/private/etc/ssl/certs)
-install(
-	FILES
-		apps/openssl/cert.pem
-		apps/openssl/openssl.cnf
-		apps/openssl/x509v3.cnf
-	DESTINATION libexec/darling/private/etc/ssl
-)
