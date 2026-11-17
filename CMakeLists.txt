@@ -613,6 +613,13 @@ set_source_files_properties(crypto/compat/explicit_bzero.c PROPERTIES
 	COMPILE_FLAGS -O0
 )
 
+# bn_nist.c reads and writes BN_ULONG limbs through unsigned int pointers;
+# with strict aliasing the optimized 64-bit P-256/P-384 reduction returns
+# wrong residues and valid EC public keys are rejected as not on the curve
+target_compile_options(crypto35 PRIVATE
+	-fno-strict-aliasing
+)
+
 target_include_directories(crypto35 PRIVATE
 	crypto
 	crypto/asn1
